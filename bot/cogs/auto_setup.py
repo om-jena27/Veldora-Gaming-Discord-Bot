@@ -26,12 +26,7 @@ class AutoSetupCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="build_server", description="Removes old channels/categories and builds the complete fresh server layout!")
-    @app_commands.checks.has_permissions(administrator=True)
-    async def build_server_slash(self, interaction: discord.Interaction):
-        await interaction.response.defer(ephemeral=True)
-        guild = interaction.guild
-
+    async def execute_build_server(self, guild: discord.Guild):
         # 0. REMOVE OLD CHANNELS & CATEGORIES
         for channel in guild.channels:
             try:
@@ -165,11 +160,24 @@ class AutoSetupCog(commands.Cog):
         cat_afk = await guild.create_category("✦─────⦅ DISCONNECTED ⦆─────✦")
         await create_vc(cat_afk, "🔊 AFK")
 
+    @app_commands.command(name="build_server", description="Removes old channels/categories and builds the complete fresh server layout!")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def build_server_slash(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        await self.execute_build_server(interaction.guild)
         try:
-            await interaction.followup.send(
-                "🚀 **SERVER CLEANED & FRESH LAYOUT BUILT SUCCESSFULLY!** Old channels wiped and clean layout installed!",
-                ephemeral=True
-            )
+            await interaction.followup.send("🚀 **SERVER RESET & FRESH LAYOUT BUILT SUCCESSFULLY!**", ephemeral=True)
+        except Exception:
+            pass
+
+    @commands.command(name="build_server")
+    @commands.has_permissions(administrator=True)
+    async def build_server_prefix(self, ctx: commands.Context):
+        """Prefix command: !build_server"""
+        msg = await ctx.send("🧹 Resetting server and building fresh layout...")
+        await self.execute_build_server(ctx.guild)
+        try:
+            await msg.edit(content="🚀 **SERVER RESET & FRESH LAYOUT BUILT SUCCESSFULLY!**")
         except Exception:
             pass
 
