@@ -3,7 +3,6 @@ import discord
 from discord.ext import commands
 import config
 
-# Fallback online animated gaming banner GIF matching Veldora neon theme
 FALLBACK_BANNER_GIF = "https://i.gifer.com/76DY.gif"
 
 class WelcomeCog(commands.Cog):
@@ -11,15 +10,26 @@ class WelcomeCog(commands.Cog):
         self.bot = bot
 
     def get_welcome_image(self):
-        """Checks for local custom Veldora banner in bot/assets/ or returns fallback URL."""
+        """Checks for local custom Veldora banner in bot/assets/ supporting gif, mp4, png, jpg."""
         assets_dir = os.path.join(os.path.dirname(__file__), "..", "assets")
-        gif_path = os.path.join(assets_dir, "welcome_banner.gif")
-        png_path = os.path.join(assets_dir, "welcome_banner.png")
+        
+        possible_files = [
+            "welcome_banner.gif.mp4",
+            "welcome_banner.mp4",
+            "welcome_banner.gif",
+            "welcome_banner.png",
+            "welcome_banner.jpg",
+            "welcome_banner.jpeg"
+        ]
 
-        if os.path.exists(gif_path):
-            return discord.File(gif_path, filename="welcome_banner.gif"), "attachment://welcome_banner.gif"
-        elif os.path.exists(png_path):
-            return discord.File(png_path, filename="welcome_banner.png"), "attachment://welcome_banner.png"
+        for fname in possible_files:
+            fpath = os.path.join(assets_dir, fname)
+            if os.path.exists(fpath):
+                ext = fname.split(".")[-1].lower()
+                if ext == "mp4":
+                    return discord.File(fpath, filename=fname), None
+                else:
+                    return discord.File(fpath, filename=fname), f"attachment://{fname}"
 
         return None, FALLBACK_BANNER_GIF
 
@@ -65,7 +75,8 @@ class WelcomeCog(commands.Cog):
             embed.set_thumbnail(url=member.display_avatar.url)
 
             file_obj, img_url = self.get_welcome_image()
-            embed.set_image(url=img_url)
+            if img_url:
+                embed.set_image(url=img_url)
 
             embed.set_footer(text=f"Member #{guild.member_count} • {guild.name}", icon_url=guild.icon.url if guild.icon else None)
             embed.timestamp = discord.utils.utcnow()
@@ -104,7 +115,8 @@ class WelcomeCog(commands.Cog):
         embed.set_thumbnail(url=member.display_avatar.url)
 
         file_obj, img_url = self.get_welcome_image()
-        embed.set_image(url=img_url)
+        if img_url:
+            embed.set_image(url=img_url)
 
         embed.set_footer(text=f"Member #{guild.member_count} • {guild.name}", icon_url=guild.icon.url if guild.icon else None)
         embed.timestamp = discord.utils.utcnow()
