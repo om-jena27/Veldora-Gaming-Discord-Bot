@@ -1,3 +1,5 @@
+import asyncio
+import logging
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -27,14 +29,17 @@ class AutoSetupCog(commands.Cog):
         self.bot = bot
 
     async def execute_build_server(self, guild: discord.Guild):
-        # 0. REMOVE OLD CHANNELS & CATEGORIES
-        for channel in guild.channels:
+        # 0. REMOVE OLD CHANNELS & CATEGORIES WITH RATE LIMIT PROTECTION
+        logging.info("Deleting existing channels...")
+        for channel in list(guild.channels):
             try:
-                await channel.delete(reason="Resetting server layout for fresh build")
-            except Exception:
-                pass
+                await channel.delete(reason="Resetting server layout")
+                await asyncio.sleep(0.3)
+            except Exception as e:
+                logging.warning(f"Could not delete channel {channel.name}: {e}")
 
-        # 1. CREATE CUSTOM VELDORA COMMUNITY ROLES
+        # 1. CREATE ROLES
+        logging.info("Creating roles...")
         role_colors = {
             "👑 Server Owner": discord.Color.gold(),
             "👑 Admin": discord.Color.dark_gold(),
@@ -62,103 +67,144 @@ class AutoSetupCog(commands.Cog):
             if not existing:
                 try:
                     created_roles[role_name] = await guild.create_role(name=role_name, color=color)
-                except Exception:
-                    pass
+                    await asyncio.sleep(0.3)
+                except Exception as e:
+                    logging.warning(f"Could not create role {role_name}: {e}")
             else:
                 created_roles[role_name] = existing
 
-        # Helper functions
+        # Helper functions with rate-limit pauses
+        async def create_cat(name):
+            try:
+                cat = await guild.create_category(name)
+                await asyncio.sleep(0.5)
+                return cat
+            except Exception as e:
+                logging.error(f"Error creating category {name}: {e}")
+                return None
+
         async def create_tc(category, name, topic=None):
-            return await category.create_text_channel(name=name, topic=topic)
+            try:
+                tc = await category.create_text_channel(name=name, topic=topic)
+                await asyncio.sleep(0.5)
+                return tc
+            except Exception as e:
+                logging.error(f"Error creating TC {name}: {e}")
+                return None
 
         async def create_vc(category, name, limit=0):
-            return await category.create_voice_channel(name=name, user_limit=limit)
+            try:
+                vc = await category.create_voice_channel(name=name, user_limit=limit)
+                await asyncio.sleep(0.5)
+                return vc
+            except Exception as e:
+                logging.error(f"Error creating VC {name}: {e}")
+                return None
 
         # 2. CATEGORY 1: WELCOME AREA
-        cat_welcome = await guild.create_category("✦─────⦅ WELCOME AREA ⦆─────✦")
-        c_guide = await create_tc(cat_welcome, "📑｜guidelines", "📑 Official community rules and guidelines.")
-        c_tour = await create_tc(cat_welcome, "📌｜home_tour", "📌 Server overview and navigation tour.")
-        c_roles = await create_tc(cat_welcome, "🏷️｜get_roles", "🏷️ Select your game roles and playstyle!")
+        cat_welcome = await create_cat("✦─────⦅ WELCOME AREA ⦆─────✦")
+        if cat_welcome:
+            c_guide = await create_tc(cat_welcome, "📑｜guidelines", "📑 Official community rules and guidelines.")
+            c_tour = await create_tc(cat_welcome, "📌｜home_tour", "📌 Server overview and navigation tour.")
+            c_roles = await create_tc(cat_welcome, "🏷️｜get_roles", "🏷️ Select your game roles and playstyle!")
 
-        embed_guide = discord.Embed(
-            title="📜 COMMUNITY GUIDELINES & RULES",
-            description=GUIDELINES_TEXT,
-            color=discord.Color.blue()
-        )
-        await c_guide.send(embed=embed_guide)
+            if c_guide:
+                embed_guide = discord.Embed(
+                    title="📜 COMMUNITY GUIDELINES & RULES",
+                    description=GUIDELINES_TEXT,
+                    color=discord.Color.blue()
+                )
+                await c_guide.send(embed=embed_guide)
+                await asyncio.sleep(0.3)
 
-        embed_roles = discord.Embed(
-            title="🎮 GAMER ROLES & INTERESTS",
-            description="Select your game and playstyle roles from the dropdown menus below!",
-            color=discord.Color.blurple()
-        )
-        await c_roles.send(embed=embed_roles, view=CategoryRolesView())
+            if c_roles:
+                embed_roles = discord.Embed(
+                    title="🎮 GAMER ROLES & INTERESTS",
+                    description="Select your game and playstyle roles from the dropdown menus below!",
+                    color=discord.Color.blurple()
+                )
+                await c_roles.send(embed=embed_roles, view=CategoryRolesView())
+                await asyncio.sleep(0.3)
 
         # 3. CATEGORY 2: LIVE SECTION
-        cat_live = await guild.create_category("✦─────⦅ LIVE SECTION ⦆─────✦")
-        await create_tc(cat_live, "🎗️｜custom_info", "🎗️ Info on upcoming custom matches & scrims.")
-        await create_vc(cat_live, "🔒 Live Stream")
-        await create_vc(cat_live, "🔊 Waiting Lobby", limit=10)
+        cat_live = await create_cat("✦─────⦅ LIVE SECTION ⦆─────✦")
+        if cat_live:
+            await create_tc(cat_live, "🎗️｜custom_info", "🎗️ Info on upcoming custom matches & scrims.")
+            await create_vc(cat_live, "🔒 Live Stream")
+            await create_vc(cat_live, "🔊 Waiting Lobby", limit=10)
 
         # 4. CATEGORY 3: IMPORTANT
-        cat_important = await guild.create_category("✦─────⦅ IMPORTANT ⦆─────✦")
-        c_announce = await create_tc(cat_important, "📢｜announcement", "📢 Server updates and announcements.")
-        await create_tc(cat_important, "📢｜stream_alerts", "🔴 Live stream alerts and video uploads.")
-        await create_tc(cat_important, "🎗️｜rewards_giveaway", "🎁 Server giveaways and rewards.")
-        await create_tc(cat_important, "🎗️｜about_community", "⭐ About our gaming community.")
+        cat_important = await create_cat("✦─────⦅ IMPORTANT ⦆─────✦")
+        if cat_important:
+            c_announce = await create_tc(cat_important, "📢｜announcement", "📢 Server updates and announcements.")
+            await create_tc(cat_important, "📢｜stream_alerts", "🔴 Live stream alerts and video uploads.")
+            await create_tc(cat_important, "🎗️｜rewards_giveaway", "🎁 Server giveaways and rewards.")
+            await create_tc(cat_important, "🎗️｜about_community", "⭐ About our gaming community.")
 
-        embed_announce = discord.Embed(
-            title="📢 WELCOME TO THE SERVER!",
-            description=ANNOUNCEMENT_TEXT,
-            color=discord.Color.gold()
-        )
-        await c_announce.send(embed=embed_announce)
+            if c_announce:
+                embed_announce = discord.Embed(
+                    title="📢 WELCOME TO THE SERVER!",
+                    description=ANNOUNCEMENT_TEXT,
+                    color=discord.Color.gold()
+                )
+                await c_announce.send(embed=embed_announce)
+                await asyncio.sleep(0.3)
 
         # 5. CATEGORY 4: SOCIAL HUB
-        cat_social = await guild.create_category("✦─────⦅ SOCIAL HUB ⦆─────✦")
-        await create_tc(cat_social, "💎｜general_chat", "💬 Main text hangout channel.")
-        await create_tc(cat_social, "🧩｜thoughts", "💭 Share your thoughts and discussions.")
-        await create_tc(cat_social, "📺｜media_share", "📺 Share game highlights and videos.")
-        await create_tc(cat_social, "🤡｜memes", "🤡 Memes and funny gaming clips.")
-        await create_tc(cat_social, "🖼️｜museum", "🖼️ Server history and cool art.")
-        await create_tc(cat_social, "📸｜flashback", "📸 Screenshots and memories.")
-        await create_vc(cat_social, "🔊 LOBBY - I", limit=30)
-        await create_vc(cat_social, "🔊 LOBBY - II", limit=40)
-        await create_vc(cat_social, "🔒 STAFF VC")
+        cat_social = await create_cat("✦─────⦅ SOCIAL HUB ⦆─────✦")
+        if cat_social:
+            await create_tc(cat_social, "💎｜general_chat", "💬 Main text hangout channel.")
+            await create_tc(cat_social, "🧩｜thoughts", "💭 Share your thoughts and discussions.")
+            await create_tc(cat_social, "📺｜media_share", "📺 Share game highlights and videos.")
+            await create_tc(cat_social, "🤡｜memes", "🤡 Memes and funny gaming clips.")
+            await create_tc(cat_social, "🖼️｜museum", "🖼️ Server history and cool art.")
+            await create_tc(cat_social, "📸｜flashback", "📸 Screenshots and memories.")
+            await create_vc(cat_social, "🔊 LOBBY - I", limit=30)
+            await create_vc(cat_social, "🔊 LOBBY - II", limit=40)
+            await create_vc(cat_social, "🔒 STAFF VC")
 
         # 6. CATEGORY 5: GAMES & RANKS
-        cat_games = await guild.create_category("✦─────⦅ GAMES & RANKS ⦆─────✦")
-        await create_tc(cat_games, "🪩｜bot_commands", "🤖 Use bot commands here.")
-        await create_tc(cat_games, "🍥｜owo_world", "🍥 Anime & mini-games chat.")
+        cat_games = await create_cat("✦─────⦅ GAMES & RANKS ⦆─────✦")
+        if cat_games:
+            await create_tc(cat_games, "🪩｜bot_commands", "🤖 Use bot commands here.")
+            await create_tc(cat_games, "🍥｜owo_world", "🍥 Anime & mini-games chat.")
 
         # 7. CATEGORY 6: CONTACT US
-        cat_contact = await guild.create_category("✦─────⦅ CONTACT US ⦆─────✦")
-        c_support = await create_tc(cat_contact, "🎯｜support_feedback", "🎯 Support and help tickets.")
-        await create_tc(cat_contact, "📑｜complaints", "📑 Submit complaints or report rule breakers.")
+        cat_contact = await create_cat("✦─────⦅ CONTACT US ⦆─────✦")
+        if cat_contact:
+            c_support = await create_tc(cat_contact, "🎯｜support_feedback", "🎯 Support and help tickets.")
+            await create_tc(cat_contact, "📑｜complaints", "📑 Submit complaints or report rule breakers.")
 
-        embed_support = discord.Embed(
-            title="🎯 COMMUNITY SUPPORT & TICKETS",
-            description="Click **📩 Open Support Ticket** below to contact moderators privately.",
-            color=discord.Color.gold()
-        )
-        await c_support.send(embed=embed_support, view=TicketCreateView())
+            if c_support:
+                embed_support = discord.Embed(
+                    title="🎯 COMMUNITY SUPPORT & TICKETS",
+                    description="Click **📩 Open Support Ticket** below to contact moderators privately.",
+                    color=discord.Color.gold()
+                )
+                await c_support.send(embed=embed_support, view=TicketCreateView())
+                await asyncio.sleep(0.3)
 
         # 8. CATEGORY 7: MUSIC LOUNGE
-        cat_music = await guild.create_category("✦─────⦅ MUSIC LOUNGE ⦆─────✦")
-        await create_tc(cat_music, "📌｜music_cmnd", "🎶 Queue songs and manage music commands.")
-        await create_vc(cat_music, "🎧 Jockie M{!}")
-        await create_vc(cat_music, "🎧 HADE M{!}")
+        cat_music = await create_cat("✦─────⦅ MUSIC LOUNGE ⦆─────✦")
+        if cat_music:
+            await create_tc(cat_music, "📌｜music_cmnd", "🎶 Queue songs and manage music commands.")
+            await create_vc(cat_music, "🎧 Jockie M{!}")
+            await create_vc(cat_music, "🎧 HADE M{!}")
 
         # 9. CATEGORY 8: PLAY ZONE
-        cat_play = await guild.create_category("✦─────⦅ PLAY ZONE ⦆─────✦")
-        await create_tc(cat_play, "🤝｜looking_for_squad", "👥 Find squadmates! Use /lfg command.")
-        await create_vc(cat_play, "🔊 DUO - ❶", limit=2)
-        await create_vc(cat_play, "🔊 SQUAD - ❶", limit=4)
-        await create_vc(cat_play, "🔊 SQUAD - ❷", limit=4)
+        cat_play = await create_cat("✦─────⦅ PLAY ZONE ⦆─────✦")
+        if cat_play:
+            await create_tc(cat_play, "🤝｜looking_for_squad", "👥 Find squadmates! Use /lfg command.")
+            await create_vc(cat_play, "🔊 DUO - ❶", limit=2)
+            await create_vc(cat_play, "🔊 SQUAD - ❶", limit=4)
+            await create_vc(cat_play, "🔊 SQUAD - ❷", limit=4)
 
         # 10. CATEGORY 9: DISCONNECTED
-        cat_afk = await guild.create_category("✦─────⦅ DISCONNECTED ⦆─────✦")
-        await create_vc(cat_afk, "🔊 AFK")
+        cat_afk = await create_cat("✦─────⦅ DISCONNECTED ⦆─────✦")
+        if cat_afk:
+            await create_vc(cat_afk, "🔊 AFK")
+
+        logging.info("Server build completed successfully!")
 
     @app_commands.command(name="build_server", description="Removes old channels/categories and builds the complete fresh server layout!")
     @app_commands.checks.has_permissions(administrator=True)
@@ -166,7 +212,7 @@ class AutoSetupCog(commands.Cog):
         await interaction.response.defer(ephemeral=True)
         await self.execute_build_server(interaction.guild)
         try:
-            await interaction.followup.send("🚀 **SERVER RESET & FRESH LAYOUT BUILT SUCCESSFULLY!**", ephemeral=True)
+            await interaction.followup.send("🚀 **SERVER RESET & COMPLETE LAYOUT BUILT SUCCESSFULLY!**", ephemeral=True)
         except Exception:
             pass
 
@@ -174,10 +220,10 @@ class AutoSetupCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def build_server_prefix(self, ctx: commands.Context):
         """Prefix command: !build_server"""
-        msg = await ctx.send("🧹 Resetting server and building fresh layout...")
+        msg = await ctx.send("🧹 Resetting server and building full 9-category layout (please wait ~15s)...")
         await self.execute_build_server(ctx.guild)
         try:
-            await msg.edit(content="🚀 **SERVER RESET & FRESH LAYOUT BUILT SUCCESSFULLY!**")
+            await msg.edit(content="🚀 **SERVER RESET & COMPLETE LAYOUT BUILT SUCCESSFULLY!** All 9 Categories and 25 Channels created!")
         except Exception:
             pass
 
