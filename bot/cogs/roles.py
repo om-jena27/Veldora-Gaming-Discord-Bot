@@ -2,6 +2,31 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
+ALL_SERVER_ROLES = {
+    "👑 Server Owner": discord.Color.gold(),
+    "👑 Admin": discord.Color.dark_gold(),
+    "🛡️ Moderator": discord.Color.red(),
+    "🤖 Bot": discord.Color.dark_grey(),
+    "💎 VIP Gamer": discord.Color.purple(),
+    "Gamers": discord.Color.blue(),
+    "Valorant": discord.Color.magenta(),
+    "Rocket League": discord.Color.orange(),
+    "BGMI": discord.Color.green(),
+    "CS:GO": discord.Color.dark_orange(),
+    "Apex Legends": discord.Color.dark_red(),
+    "Minecraft": discord.Color.dark_green(),
+    "Competitive Gamer": discord.Color.dark_purple(),
+    "Casual Gamer": discord.Color.light_grey(),
+    "Streamer": discord.Color.dark_magenta(),
+    "Music Enthusiast": discord.Color.dark_teal(),
+    "Meme Lord": discord.Color.teal(),
+    "Event Notified": discord.Color.yellow(),
+    "🥉 Level 5 - Rookie": discord.Color.from_rgb(205, 127, 50),
+    "🥈 Level 15 - Veteran": discord.Color.from_rgb(192, 192, 192),
+    "🥇 Level 30 - Elite": discord.Color.from_rgb(255, 215, 0),
+    "👑 Level 50 - Legend": discord.Color.from_rgb(230, 0, 230)
+}
+
 # --- Game Roles Dropdown ---
 class GameRoleSelect(discord.ui.Select):
     def __init__(self):
@@ -150,6 +175,38 @@ class CategoryRolesView(discord.ui.View):
 class RolesCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+
+    async def create_all_roles(self, guild: discord.Guild):
+        added = []
+        for role_name, color in ALL_SERVER_ROLES.items():
+            existing = discord.utils.get(guild.roles, name=role_name)
+            if not existing:
+                try:
+                    await guild.create_role(name=role_name, color=color)
+                    added.append(role_name)
+                except Exception:
+                    pass
+        return added
+
+    @commands.command(name="setup_roles_all")
+    @commands.has_permissions(administrator=True)
+    async def setup_roles_all_cmd(self, ctx: commands.Context):
+        """Prefix command: !setup_roles_all to create all 22 server roles."""
+        added = await self.create_all_roles(ctx.guild)
+        if added:
+            await ctx.send(f"✅ Created {len(added)} missing server roles:\n**{', '.join(added)}**")
+        else:
+            await ctx.send("✅ All 22 server roles are already created and present in your server!")
+
+    @app_commands.command(name="setup_roles_all", description="Create all 22 community server roles instantly (Admin only)")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def setup_roles_all_slash(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        added = await self.create_all_roles(interaction.guild)
+        if added:
+            await interaction.followup.send(f"✅ Created {len(added)} missing server roles:\n**{', '.join(added)}**", ephemeral=True)
+        else:
+            await interaction.followup.send("✅ All 22 server roles are already created and present in your server!", ephemeral=True)
 
     @commands.command(name="setup_roles")
     @commands.has_permissions(administrator=True)
