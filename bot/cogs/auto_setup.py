@@ -104,6 +104,7 @@ class AutoSetupCog(commands.Cog):
         # 2. CATEGORY 1: WELCOME AREA
         cat_welcome = await create_cat("✦─────⦅ WELCOME AREA ⦆─────✦")
         if cat_welcome:
+            c_welcome = await create_tc(cat_welcome, "👋｜welcome", "👋 Welcome greetings for new community members!")
             c_guide = await create_tc(cat_welcome, "📑｜guidelines", "📑 Official community rules and guidelines.")
             c_tour = await create_tc(cat_welcome, "📌｜home_tour", "📌 Server overview and navigation tour.")
             c_roles = await create_tc(cat_welcome, "🏷️｜get_roles", "🏷️ Select your game roles and playstyle!")
@@ -223,7 +224,7 @@ class AutoSetupCog(commands.Cog):
         msg = await ctx.send("🧹 Resetting server and building full 9-category layout (please wait ~15s)...")
         await self.execute_build_server(ctx.guild)
         try:
-            await msg.edit(content="🚀 **SERVER RESET & COMPLETE LAYOUT BUILT SUCCESSFULLY!** All 9 Categories and 25 Channels created!")
+            await msg.edit(content="🚀 **SERVER RESET & COMPLETE LAYOUT BUILT SUCCESSFULLY!** All 9 Categories and 26 Channels created!")
         except Exception:
             pass
 
