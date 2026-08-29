@@ -6,50 +6,52 @@ from cogs.verify import VerifyView
 from cogs.tickets import TicketCreateView
 
 GUIDELINES_TEXT = (
-    "Welcome to the Community Server! Please follow our server guidelines:\n\n"
+    "Welcome to our Veldora Gaming Community! Please follow our server guidelines:\n\n"
     "**1️⃣ Be Respectful**\nNo toxic behavior, harassment, hate speech, or offensive language.\n\n"
-    "**2️⃣ Voice Channel Rules**\nNo loud noise, mic spamming, or ear-rape audio. Use Push-to-Talk if your background is noisy.\n\n"
+    "**2️⃣ Voice Channel Rules**\nNo loud noise, mic spamming, or ear-rape audio. Respect squad channel user limits.\n\n"
     "**3️⃣ Fair Gaming & No Cheats**\nCheating, hacking, or exploiting in games is strictly prohibited.\n\n"
-    "**4️⃣ Channel Usage**\nKeep discussions in relevant channels: memes in `#🤡 | memes`, bot commands in `#🪩 | bot_commands`.\n\n"
+    "**4️⃣ Channel Usage**\nKeep discussions in relevant channels: memes in `#🤡-|-memes`, bot commands in `#🪩-|-bot_commands`.\n\n"
     "**5️⃣ No Unauthorized Self-Promotion**\nDo not share server invite links or advertise streams without staff permission."
 )
 
 ANNOUNCEMENT_TEXT = (
-    "🎉 **WELCOME TO THE COMMUNITY SERVER!** 🎉\n\n"
-    "👉 Step 1: Read rules in **#📑 | guidelines**\n"
-    "👉 Step 2: Select your game roles in **#🏷️ | get_roles**\n"
-    "👉 Step 3: Chat in **#💎 | general_chat**\n"
-    "👉 Step 4: Need support? Open a ticket in **#🎯 | support_feedback**!"
+    "🎉 **WELCOME TO VELDORA GAMING COMMUNITY!** 🎉\n\n"
+    "👉 Step 1: Read rules in **#📑-|-guidelines**\n"
+    "👉 Step 2: Select your game roles in **#🏷️-|-get_roles**\n"
+    "👉 Step 3: Chat in **#💎-|-general_chat**\n"
+    "👉 Step 4: Need support? Open a ticket in **#🎯-|-support_feedback**!"
 )
 
 class AutoSetupCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="build_server", description="AUTOMATICALLY builds the exact Dynamo Gaming style layout (Categories, Channels, VC, Roles)!")
+    @app_commands.command(name="build_server", description="AUTOMATICALLY builds custom Veldora Gaming layout & roles!")
     @app_commands.checks.has_permissions(administrator=True)
     async def build_server_slash(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         guild = interaction.guild
 
-        # 1. Create Roles & Hierarchy
+        # 1. Custom Veldora Community Roles & Hierarchy
         role_colors = {
-            "TEAM HYDRA": discord.Color.dark_red(),
-            "★═★ MOD / SUPPORT ★═★": discord.Color.red(),
-            "Youtube Squad": discord.Color.green(),
-            "Honorable citizen": discord.Color.gold(),
-            "LEVEL 20": discord.Color.purple(),
-            "LEVEL 15": discord.Color.magenta(),
-            "LEVEL 10": discord.Color.blue(),
-            "Gamers": discord.Color.blurple(),
-            "Valorant": discord.Color.red(),
-            "Rocket League": discord.Color.orange(),
-            "BGMI": discord.Color.dark_green(),
-            "CS:GO": discord.Color.dark_orange(),
-            "Apex Legends": discord.Color.dark_magenta(),
-            "Minecraft": discord.Color.green(),
-            "Music Enthusiast": discord.Color.dark_teal(),
-            "Meme Lord": discord.Color.teal()
+            "👑 Server Owner": discord.Color.gold(),
+            "👑 Admin": discord.Color.dark_gold(),
+            "🛡️ Moderator": discord.Color.red(),
+            "🤖 Bot": discord.Color.dark_grey(),
+            "💎 VIP Gamer": discord.Color.purple(),
+            "🎮 Gamers": discord.Color.blue(),
+            "🎯 Valorant": discord.Color.magenta(),
+            "🚗 Rocket League": discord.Color.orange(),
+            "📱 BGMI": discord.Color.green(),
+            "🔫 CS:GO": discord.Color.dark_orange(),
+            "🔥 Apex Legends": discord.Color.dark_red(),
+            "⛏️ Minecraft": discord.Color.dark_green(),
+            "🏆 Competitive Gamer": discord.Color.dark_purple(),
+            "🕹️ Casual Gamer": discord.Color.light_grey(),
+            "🎥 Streamer": discord.Color.dark_magenta(),
+            "🎵 Music Enthusiast": discord.Color.dark_teal(),
+            "🤡 Meme Lord": discord.Color.teal(),
+            "📢 Event Notified": discord.Color.yellow()
         }
 
         created_roles = {}
@@ -104,9 +106,9 @@ class AutoSetupCog(commands.Cog):
         # 4. CATEGORY 3: IMPORTANT
         cat_important = await guild.create_category("✦─────⦅ IMPORTANT ⦆─────✦")
         c_announce = await create_tc(cat_important, "📢-|-announcement", "📢 Server updates and announcements.")
-        await create_tc(cat_important, "📢-|-dynamo_live", "🔴 Live stream alerts and video uploads.")
+        await create_tc(cat_important, "📢-|-stream_alerts", "🔴 Live stream alerts and video uploads.")
         await create_tc(cat_important, "🎗️-|-rewards_giveaway", "🎁 Server giveaways and rewards.")
-        await create_tc(cat_important, "🎗️-|-about_dynamo", "⭐ About the channel & creator.")
+        await create_tc(cat_important, "🎗️-|-about_community", "⭐ About our gaming community.")
 
         embed_announce = discord.Embed(
             title="📢 WELCOME TO THE SERVER!",
@@ -162,7 +164,7 @@ class AutoSetupCog(commands.Cog):
         await create_vc(cat_afk, "🔊 AFK")
 
         await interaction.followup.send(
-            "🚀 **EXACT 'DYNAMO GAMING' LAYOUT BUILT SUCCESSFULLY!** 9 Categories, 25 Text & Voice Channels, Roles, and Interactive Panels installed!",
+            "🚀 **CUSTOM VELDORA COMMUNITY SERVER BUILT SUCCESSFULLY!** Includes custom roles, 9 styled categories, 25 text/voice channels, and interactive panels!",
             ephemeral=True
         )
 
