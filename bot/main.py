@@ -27,7 +27,8 @@ initial_extensions = [
     "cogs.auto_setup",
     "cogs.verify",
     "cogs.tickets",
-    "cogs.automod"
+    "cogs.automod",
+    "cogs.levels"
 ]
 
 @bot.event
