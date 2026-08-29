@@ -11,54 +11,93 @@ class ModerationCog(commands.Cog):
         gamer_role = discord.utils.get(guild.roles, name=config.AUTO_ROLE_NAME) or discord.utils.get(guild.roles, name="Gamers")
         role_mention = gamer_role.mention if gamer_role else f"**@{config.AUTO_ROLE_NAME}**"
 
+        get_roles_channel = discord.utils.get(guild.text_channels, name="🏷️｜get_roles") or discord.utils.get(guild.text_channels, name="get-roles")
+        memes_channel = discord.utils.get(guild.text_channels, name="🤡｜memes") or discord.utils.get(guild.text_channels, name="memes")
+        bot_channel = discord.utils.get(guild.text_channels, name="🪩｜bot_commands") or discord.utils.get(guild.text_channels, name="bot-commands")
+        support_channel = discord.utils.get(guild.text_channels, name="🎯｜support_feedback") or discord.utils.get(guild.text_channels, name="support-ticket")
+
+        get_roles_mention = get_roles_channel.mention if get_roles_channel else "**#get_roles**"
+        memes_mention = memes_channel.mention if memes_channel else "**#memes**"
+        bot_mention = bot_channel.mention if bot_channel else "**#bot_commands**"
+        support_mention = support_channel.mention if support_channel else "**#support_feedback**"
+
         embed = discord.Embed(
             title="📜 VELDORA GAMING COMMUNITY RULES & GUIDELINES",
             description=(
                 f"Welcome to **{guild.name}**! Upon joining and verifying, members are assigned the {role_mention} role to access all community channels.\n\n"
-                "Please read and follow our community guidelines to keep the server fun, competitive, and safe for everyone!"
+                "Please read and follow our guidelines below to keep the server fun, competitive, and safe for everyone!\n\n"
+                "──────────────────────────────────────────────"
             ),
             color=discord.Color.gold()
         )
 
         embed.add_field(
             name="👋 1. Verification & Member Access",
-            value=f"All verified members receive the {role_mention} role. Head over to **#🏷️｜get_roles** to pick your games (Valorant, Rocket League, BGMI, CS:GO, Apex, Minecraft) and playstyle!",
+            value=(
+                f"• All verified community members receive the {role_mention} role.\n"
+                f"• Head over to {get_roles_mention} to select your game roles (Valorant, Rocket League, BGMI, CS:GO, Apex, Minecraft) and playstyle!\n\n"
+                "──────────────────────────────────────────────"
+            ),
             inline=False
         )
 
         embed.add_field(
             name="🤝 2. Respect & General Conduct",
-            value="Treat all members with respect. Zero tolerance for toxicity, hate speech, racism, harassment, or personal attacks.",
+            value=(
+                "• Treat all community members with respect at all times.\n"
+                "• Zero tolerance for toxicity, hate speech, racism, sexism, harassment, or personal attacks.\n\n"
+                "──────────────────────────────────────────────"
+            ),
             inline=False
         )
 
         embed.add_field(
             name="🎙️ 3. Voice Channel & Squad Etiquette",
-            value="No mic spamming, ear-rape audio, or loud background noise. Use Push-to-Talk if needed. Respect squad channel user limits.",
+            value=(
+                "• Avoid loud background noise, mic spamming, or ear-rape audio.\n"
+                "• Use Push-to-Talk if your environment is noisy.\n"
+                "• Respect squad channel user limits (DUO / SQUAD VCs).\n\n"
+                "──────────────────────────────────────────────"
+            ),
             inline=False
         )
 
         embed.add_field(
             name="🎯 4. Fair Play & Anti-Cheat Policy",
-            value="Strict zero-tolerance policy against hacks, cheats, exploits, or stream sniping. Cheaters will be permanently banned immediately.",
+            value=(
+                "• Strict zero-tolerance policy against hacks, cheats, aimbots, macro exploits, or stream sniping.\n"
+                "• Cheaters will be permanently banned from the server immediately without warning.\n\n"
+                "──────────────────────────────────────────────"
+            ),
             inline=False
         )
 
         embed.add_field(
             name="💬 5. Text Channel Guidelines & Spam",
-            value="Keep talk relevant: memes in **#🤡｜memes**, bot commands in **#🪩｜bot_commands**, game talk in game channels. No spamming or `@everyone` pings.",
+            value=(
+                f"• Keep talk in relevant channels: memes in {memes_mention}, bot commands in {bot_mention}.\n"
+                "• Avoid text spam, message flooding, wall of text, or tagging `@everyone` unnecessarily.\n\n"
+                "──────────────────────────────────────────────"
+            ),
             inline=False
         )
 
         embed.add_field(
             name="🚫 6. No Self-Promotion or Invite Links",
-            value="Do not post unauthorized stream links, products, or Discord invite links in public text channels.",
+            value=(
+                "• Do not post unauthorized stream links, YouTube links, products, or external Discord invite links.\n"
+                "• Self-promotion is strictly restricted to staff-approved channels.\n\n"
+                "──────────────────────────────────────────────"
+            ),
             inline=False
         )
 
         embed.add_field(
             name="🛡️ 7. Support & Staff Assistance",
-            value="If you need help or want to report a rule breaker, open a private ticket in **#🎯｜support_feedback**!",
+            value=(
+                f"• If you need help, have a question, or want to report a rule breaker, open a private ticket in {support_mention}!\n"
+                "• Follow instructions given by **🛡️ Moderator** and **👑 Admin** staff.\n"
+            ),
             inline=False
         )
 
