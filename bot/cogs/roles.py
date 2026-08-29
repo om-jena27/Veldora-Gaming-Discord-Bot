@@ -17,6 +17,7 @@ class GameRoleSelect(discord.ui.Select):
             placeholder="🎮 Select your Games...",
             min_values=0,
             max_values=len(options),
+            options=options,
             custom_id="select_game_roles"
         )
 
@@ -69,6 +70,7 @@ class PlaystyleRoleSelect(discord.ui.Select):
             placeholder="🏆 Select your Gamer Style...",
             min_values=0,
             max_values=len(options),
+            options=options,
             custom_id="select_playstyle_roles"
         )
 
@@ -108,6 +110,7 @@ class InterestRoleSelect(discord.ui.Select):
             placeholder="🎵 Select your Interests...",
             min_values=0,
             max_values=len(options),
+            options=options,
             custom_id="select_interest_roles"
         )
 
