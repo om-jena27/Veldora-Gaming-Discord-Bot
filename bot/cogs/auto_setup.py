@@ -5,52 +5,51 @@ from cogs.roles import CategoryRolesView
 from cogs.verify import VerifyView
 from cogs.tickets import TicketCreateView
 
-RULES_TEXT = (
-    "Welcome to our Gaming Community! Please follow these rules:\n\n"
-    "**1️⃣ Respect Everyone**\nNo toxicity, hate speech, harassment, or personal attacks.\n\n"
-    "**2️⃣ Voice Channel Etiquette**\nNo mic spamming or ear rape audio. Respect squad channel user limits.\n\n"
-    "**3️⃣ Fair Play & No Cheating**\nZero tolerance for hacks, cheats, or exploit abuse in any game.\n\n"
-    "**4️⃣ Channel Usage & Spam**\nUse channels correctly: memes in `#meme-central`, bot commands in `#bot-commands`.\n\n"
-    "**5️⃣ No Self-Promotion / Invite Links**\nDo not advertise streams, products, or other Discord servers without permission."
+GUIDELINES_TEXT = (
+    "Welcome to the Community Server! Please follow our server guidelines:\n\n"
+    "**1️⃣ Be Respectful**\nNo toxic behavior, harassment, hate speech, or offensive language.\n\n"
+    "**2️⃣ Voice Channel Rules**\nNo loud noise, mic spamming, or ear-rape audio. Use Push-to-Talk if your background is noisy.\n\n"
+    "**3️⃣ Fair Gaming & No Cheats**\nCheating, hacking, or exploiting in games is strictly prohibited.\n\n"
+    "**4️⃣ Channel Usage**\nKeep discussions in relevant channels: memes in `#🤡 | memes`, bot commands in `#🪩 | bot_commands`.\n\n"
+    "**5️⃣ No Unauthorized Self-Promotion**\nDo not share server invite links or advertise streams without staff permission."
 )
 
 ANNOUNCEMENT_TEXT = (
-    "🎉 **WELCOME TO THE PUBLIC GAMING COMMUNITY!** 🎉\n\n"
-    "Whether you play **Rocket League**, **Valorant**, **BGMI**, **CS2**, or casual games, welcome!\n\n"
-    "👉 Step 1: Verify yourself in **#verify**\n"
-    "👉 Step 2: Read guidelines in **#rules-and-info**\n"
-    "👉 Step 3: Select your roles in **#get-roles**!\n"
-    "👉 Step 4: Need help? Open a support ticket in **#support-ticket**!"
+    "🎉 **WELCOME TO THE COMMUNITY SERVER!** 🎉\n\n"
+    "👉 Step 1: Read rules in **#📑 | guidelines**\n"
+    "👉 Step 2: Select your game roles in **#🏷️ | get_roles**\n"
+    "👉 Step 3: Chat in **#💎 | general_chat**\n"
+    "👉 Step 4: Need support? Open a ticket in **#🎯 | support_feedback**!"
 )
 
 class AutoSetupCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="build_server", description="AUTOMATICALLY builds entire PUBLIC gaming server (Channels, Verification, Tickets, Roles, Rules)!")
+    @app_commands.command(name="build_server", description="AUTOMATICALLY builds the exact Dynamo Gaming style layout (Categories, Channels, VC, Roles)!")
     @app_commands.checks.has_permissions(administrator=True)
     async def build_server_slash(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         guild = interaction.guild
 
-        # 1. Create All Category Roles with Distinct Colors
+        # 1. Create Roles & Hierarchy
         role_colors = {
-            "👑 Admin": discord.Color.gold(),
-            "🛡️ Moderator": discord.Color.red(),
-            "🤖 Bot": discord.Color.dark_grey(),
-            "Gamers": discord.Color.blue(),
-            "Valorant": discord.Color.magenta(),
+            "TEAM HYDRA": discord.Color.dark_red(),
+            "★═★ MOD / SUPPORT ★═★": discord.Color.red(),
+            "Youtube Squad": discord.Color.green(),
+            "Honorable citizen": discord.Color.gold(),
+            "LEVEL 20": discord.Color.purple(),
+            "LEVEL 15": discord.Color.magenta(),
+            "LEVEL 10": discord.Color.blue(),
+            "Gamers": discord.Color.blurple(),
+            "Valorant": discord.Color.red(),
             "Rocket League": discord.Color.orange(),
-            "BGMI": discord.Color.green(),
+            "BGMI": discord.Color.dark_green(),
             "CS:GO": discord.Color.dark_orange(),
-            "Apex Legends": discord.Color.dark_red(),
-            "Minecraft": discord.Color.dark_green(),
-            "Competitive Gamer": discord.Color.purple(),
-            "Casual Gamer": discord.Color.light_grey(),
-            "Streamer": discord.Color.dark_purple(),
+            "Apex Legends": discord.Color.dark_magenta(),
+            "Minecraft": discord.Color.green(),
             "Music Enthusiast": discord.Color.dark_teal(),
-            "Meme Lord": discord.Color.teal(),
-            "Event Notified": discord.Color.yellow()
+            "Meme Lord": discord.Color.teal()
         }
 
         created_roles = {}
@@ -76,96 +75,94 @@ class AutoSetupCog(commands.Cog):
                 return await category.create_voice_channel(name=name, user_limit=limit)
             return existing
 
-        # 2. Category 1: INFORMATION & WELCOME
-        cat_info = await guild.create_category("📋 INFORMATION & WELCOME")
-        c_verify = await create_tc(cat_info, "verify", "✅ Verify yourself to join the public community!")
-        c_rules = await create_tc(cat_info, "rules-and-info", "📜 Server guidelines and rules.")
-        c_roles = await create_tc(cat_info, "get-roles", "🏷️ Select your games, playstyle, and interest roles!")
-        c_welcome = await create_tc(cat_info, "welcome-and-goodbye", "👋 Welcome greetings for new members.")
-        c_ticket = await create_tc(cat_info, "support-ticket", "🎫 Open a ticket for staff help.")
+        # 2. CATEGORY 1: WELCOME AREA
+        cat_welcome = await guild.create_category("✦─────⦅ WELCOME AREA ⦆─────✦")
+        c_guide = await create_tc(cat_welcome, "📑-|-guidelines", "📑 Official community rules and guidelines.")
+        c_tour = await create_tc(cat_welcome, "📌-|-home_tour", "📌 Server overview and navigation tour.")
+        c_roles = await create_tc(cat_welcome, "🏷️-|-get_roles", "🏷️ Select your game roles and playstyle!")
 
-        # Post verification embed in #verify
-        embed_verify = discord.Embed(
-            title="🛡️ PUBLIC COMMUNITY VERIFICATION",
-            description=(
-                "Welcome to our Gaming Community Server!\n\n"
-                "Click the **✅ Verify & Join Community** button below to get full access to channels!"
-            ),
-            color=discord.Color.green()
-        )
-        await c_verify.send(embed=embed_verify, view=VerifyView())
-
-        # Post rules embed in #rules-and-info
-        embed_rules = discord.Embed(
-            title="📜 SERVER RULES & COMMUNITY GUIDELINES",
-            description=RULES_TEXT,
+        embed_guide = discord.Embed(
+            title="📜 COMMUNITY GUIDELINES & RULES",
+            description=GUIDELINES_TEXT,
             color=discord.Color.blue()
         )
-        await c_rules.send(embed=embed_rules)
+        await c_guide.send(embed=embed_guide)
 
-        # Post Role Panel in #get-roles
         embed_roles = discord.Embed(
-            title="🎮 COMMUNITY CATEGORY ROLES",
-            description=(
-                "Customize your profile by selecting roles from the dropdown menus below!\n\n"
-                "🎯 **Games:** Valorant, Rocket League, BGMI, CS:GO, Apex, Minecraft\n"
-                "🏆 **Playstyle:** Competitive Gamer, Casual Gamer, Streamer\n"
-                "🎵 **Interests:** Music Enthusiast, Meme Lord, Event Notified"
-            ),
+            title="🎮 GAMER ROLES & INTERESTS",
+            description="Select your game and playstyle roles from the dropdown menus below!",
             color=discord.Color.blurple()
         )
         await c_roles.send(embed=embed_roles, view=CategoryRolesView())
 
-        # Post Ticket Panel in #support-ticket
-        embed_ticket = discord.Embed(
-            title="🎫 COMMUNITY SUPPORT & HELP TICKETS",
-            description="Click **📩 Open Support Ticket** below to contact moderators privately.",
-            color=discord.Color.gold()
-        )
-        await c_ticket.send(embed=embed_ticket, view=TicketCreateView())
+        # 3. CATEGORY 2: LIVE SECTION
+        cat_live = await guild.create_category("✦─────⦅ LIVE SECTION ⦆─────✦")
+        await create_tc(cat_live, "🎗️-|-custom_info", "🎗️ Info on upcoming custom matches & scrims.")
+        await create_vc(cat_live, "🔒 Live Stream")
+        await create_vc(cat_live, "🔊 Waiting Lobby", limit=10)
 
-        # 3. Category 2: COMMUNITY CHAT
-        cat_community = await guild.create_category("💬 COMMUNITY CHAT")
-        await create_tc(cat_community, "general-chat", "💬 Main hangout channel for chatting.")
-        c_announce = await create_tc(cat_community, "announcements", "📢 Important server updates and news.")
-        await create_tc(cat_community, "bot-commands", "🤖 Use bot commands here.")
+        # 4. CATEGORY 3: IMPORTANT
+        cat_important = await guild.create_category("✦─────⦅ IMPORTANT ⦆─────✦")
+        c_announce = await create_tc(cat_important, "📢-|-announcement", "📢 Server updates and announcements.")
+        await create_tc(cat_important, "📢-|-dynamo_live", "🔴 Live stream alerts and video uploads.")
+        await create_tc(cat_important, "🎗️-|-rewards_giveaway", "🎁 Server giveaways and rewards.")
+        await create_tc(cat_important, "🎗️-|-about_dynamo", "⭐ About the channel & creator.")
 
         embed_announce = discord.Embed(
-            title="📢 PUBLIC SERVER LAUNCH",
+            title="📢 WELCOME TO THE SERVER!",
             description=ANNOUNCEMENT_TEXT,
             color=discord.Color.gold()
         )
         await c_announce.send(embed=embed_announce)
 
-        # 4. Category 3: GAMING LOUNGE
-        cat_gaming = await guild.create_category("🎮 GAMING LOUNGE")
-        await create_tc(cat_gaming, "gaming-discussion", "🎮 General gaming talk and news.")
-        await create_tc(cat_gaming, "valorant", "🎯 Valorant chat, clips & ranks.")
-        await create_tc(cat_gaming, "rocket-league", "🚗 Rocket League clips & trades.")
-        await create_tc(cat_gaming, "bgmi", "📱 BGMI room codes & squad chat.")
-        await create_tc(cat_gaming, "looking-for-group", "👥 Use /lfg command to assemble squads!")
+        # 5. CATEGORY 4: SOCIAL HUB
+        cat_social = await guild.create_category("✦─────⦅ SOCIAL HUB ⦆─────✦")
+        await create_tc(cat_social, "💎-|-general_chat", "💬 Main text hangout channel.")
+        await create_tc(cat_social, "🧩-|-thoughts", "💭 Share your thoughts and discussions.")
+        await create_tc(cat_social, "📺-|-media_share", "📺 Share game highlights and videos.")
+        await create_tc(cat_social, "🤡-|-memes", "🤡 Memes and funny gaming clips.")
+        await create_tc(cat_social, "🖼️-|-museum", "🖼️ Server history and cool art.")
+        await create_tc(cat_social, "📸-|-flashback", "📸 Screenshots and memories.")
+        await create_vc(cat_social, "🔊 LOBBY - I", limit=30)
+        await create_vc(cat_social, "🔊 LOBBY - II", limit=40)
+        await create_vc(cat_social, "🔒 STAFF VC")
 
-        # 5. Category 4: FUN & MEDIA
-        cat_fun = await guild.create_category("🎉 FUN & MEDIA")
-        await create_tc(cat_fun, "meme-central", "🤡 Memes and funny gaming clips.")
-        await create_tc(cat_fun, "media-and-clips", "📷 Share game highlights and screenshots.")
-        await create_tc(cat_fun, "suggestions", "💡 Share your ideas to improve the server.")
+        # 6. CATEGORY 5: GAMES & RANKS
+        cat_games = await guild.create_category("✦─────⦅ GAMES & RANKS ⦆─────✦")
+        await create_tc(cat_games, "🪩-|-bot_commands", "🤖 Use bot commands here.")
+        await create_tc(cat_games, "🍥-|-owo_world", "🍥 Anime & mini-games chat.")
 
-        # 6. Category 5: MUSIC ZONE
-        cat_music = await guild.create_category("🎵 MUSIC ZONE")
-        await create_tc(cat_music, "music-chat", "🎶 Queue music and manage music bot commands.")
-        await create_vc(cat_music, "🎧 Music Vibes VC")
+        # 7. CATEGORY 6: CONTACT US
+        cat_contact = await guild.create_category("✦─────⦅ CONTACT US ⦆─────✦")
+        c_support = await create_tc(cat_contact, "🎯-|-support_feedback", "🎯 Support and help tickets.")
+        await create_tc(cat_contact, "📑-|-complaints", "📑 Submit complaints or report rule breakers.")
 
-        # 7. Category 6: VOICE SQUADS
-        cat_voice = await guild.create_category("🔊 VOICE SQUADS")
-        await create_vc(cat_voice, "🔊 General Lounge 1")
-        await create_vc(cat_voice, "🔊 General Lounge 2")
-        await create_vc(cat_voice, "🎯 Valorant Squad (5 Slots)", limit=5)
-        await create_vc(cat_voice, "🚗 Rocket League (3 Slots)", limit=3)
-        await create_vc(cat_voice, "📱 BGMI Squad (4 Slots)", limit=4)
+        embed_support = discord.Embed(
+            title="🎯 COMMUNITY SUPPORT & TICKETS",
+            description="Click **📩 Open Support Ticket** below to contact moderators privately.",
+            color=discord.Color.gold()
+        )
+        await c_support.send(embed=embed_support, view=TicketCreateView())
+
+        # 8. CATEGORY 7: MUSIC LOUNGE
+        cat_music = await guild.create_category("✦─────⦅ MUSIC LOUNGE ⦆─────✦")
+        await create_tc(cat_music, "📌-|-music_cmnd", "🎶 Queue songs and manage music commands.")
+        await create_vc(cat_music, "🎧 Jockie M{!}")
+        await create_vc(cat_music, "🎧 HADE M{!}")
+
+        # 9. CATEGORY 8: PLAY ZONE
+        cat_play = await guild.create_category("✦─────⦅ PLAY ZONE ⦆─────✦")
+        await create_tc(cat_play, "🤝-|-looking_for_squad", "👥 Find squadmates! Use /lfg command.")
+        await create_vc(cat_play, "🔊 DUO - ❶", limit=2)
+        await create_vc(cat_play, "🔊 SQUAD - ❶", limit=4)
+        await create_vc(cat_play, "🔊 SQUAD - ❷", limit=4)
+
+        # 10. CATEGORY 9: DISCONNECTED
+        cat_afk = await guild.create_category("✦─────⦅ DISCONNECTED ⦆─────✦")
+        await create_vc(cat_afk, "🔊 AFK")
 
         await interaction.followup.send(
-            "🚀 **PUBLIC COMMUNITY SERVER BUILT SUCCESSFULLY!** All 16 Category Roles, Verification, Support Tickets, Anti-Spam Automod, and Multi-Category Role Selector installed!",
+            "🚀 **EXACT 'DYNAMO GAMING' LAYOUT BUILT SUCCESSFULLY!** 9 Categories, 25 Text & Voice Channels, Roles, and Interactive Panels installed!",
             ephemeral=True
         )
 
