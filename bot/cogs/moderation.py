@@ -1,10 +1,88 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
+import config
 
 class ModerationCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+
+    async def send_rules_embed(self, channel: discord.TextChannel, guild: discord.Guild, author: discord.User = None):
+        gamer_role = discord.utils.get(guild.roles, name=config.AUTO_ROLE_NAME) or discord.utils.get(guild.roles, name="Gamers")
+        role_mention = gamer_role.mention if gamer_role else f"**@{config.AUTO_ROLE_NAME}**"
+
+        embed = discord.Embed(
+            title="📜 VELDORA GAMING COMMUNITY RULES & GUIDELINES",
+            description=(
+                f"Welcome to **{guild.name}**! Upon joining and verifying, members are assigned the {role_mention} role to access all community channels.\n\n"
+                "Please read and follow our community guidelines to keep the server fun, competitive, and safe for everyone!"
+            ),
+            color=discord.Color.gold()
+        )
+
+        embed.add_field(
+            name="👋 1. Verification & Member Access",
+            value=f"All verified members receive the {role_mention} role. Head over to **#🏷️｜get_roles** to pick your games (Valorant, Rocket League, BGMI, CS:GO, Apex, Minecraft) and playstyle!",
+            inline=False
+        )
+
+        embed.add_field(
+            name="🤝 2. Respect & General Conduct",
+            value="Treat all members with respect. Zero tolerance for toxicity, hate speech, racism, harassment, or personal attacks.",
+            inline=False
+        )
+
+        embed.add_field(
+            name="🎙️ 3. Voice Channel & Squad Etiquette",
+            value="No mic spamming, ear-rape audio, or loud background noise. Use Push-to-Talk if needed. Respect squad channel user limits.",
+            inline=False
+        )
+
+        embed.add_field(
+            name="🎯 4. Fair Play & Anti-Cheat Policy",
+            value="Strict zero-tolerance policy against hacks, cheats, exploits, or stream sniping. Cheaters will be permanently banned immediately.",
+            inline=False
+        )
+
+        embed.add_field(
+            name="💬 5. Text Channel Guidelines & Spam",
+            value="Keep talk relevant: memes in **#🤡｜memes**, bot commands in **#🪩｜bot_commands**, game talk in game channels. No spamming or `@everyone` pings.",
+            inline=False
+        )
+
+        embed.add_field(
+            name="🚫 6. No Self-Promotion or Invite Links",
+            value="Do not post unauthorized stream links, products, or Discord invite links in public text channels.",
+            inline=False
+        )
+
+        embed.add_field(
+            name="🛡️ 7. Support & Staff Assistance",
+            value="If you need help or want to report a rule breaker, open a private ticket in **#🎯｜support_feedback**!",
+            inline=False
+        )
+
+        embed.set_footer(text=f"{guild.name} • Official Guidelines", icon_url=guild.icon.url if guild.icon else None)
+        embed.timestamp = discord.utils.utcnow()
+
+        await channel.send(embed=embed)
+
+    @commands.command(name="post_rules")
+    @commands.has_permissions(administrator=True)
+    async def post_rules_prefix(self, ctx: commands.Context):
+        """Prefix command: !post_rules"""
+        await self.send_rules_embed(ctx.channel, ctx.guild, ctx.author)
+        try:
+            await ctx.message.delete()
+        except Exception:
+            pass
+
+    @app_commands.command(name="post_rules", description="Post official community rules embed with member role mention (Admin only)")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def post_rules_slash(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        await self.send_rules_embed(interaction.channel, interaction.guild, interaction.user)
+        await interaction.followup.send("✅ Rules embed posted in this channel!", ephemeral=True)
 
     @app_commands.command(name="announce", description="Post an official server announcement embed (Admin/Mod only)")
     @app_commands.describe(
@@ -36,25 +114,6 @@ class ModerationCog(commands.Cog):
 
         await target_channel.send(content=content, embed=embed)
         await interaction.response.send_message(f"✅ Announcement posted in {target_channel.mention}!", ephemeral=True)
-
-    @app_commands.command(name="post_rules", description="Post official server rules embed into current channel (Admin only)")
-    @app_commands.checks.has_permissions(administrator=True)
-    async def post_rules_slash(self, interaction: discord.Interaction):
-        embed = discord.Embed(
-            title="📜 SERVER RULES & COMMUNITY GUIDELINES",
-            description=(
-                "Welcome to our gaming community! Please follow these guidelines to keep the server fun for everyone.\n\n"
-                "**1️⃣ Respect Everyone**\nNo toxicity, hate speech, harassment, or personal attacks.\n\n"
-                "**2️⃣ Voice Channel Etiquette**\nNo mic spamming or loud noise. Respect squad channel limits.\n\n"
-                "**3️⃣ Fair Play & No Cheating**\nZero tolerance for cheating, hacking, or exploit abuse in any game.\n\n"
-                "**4️⃣ Channel Usage & Spam**\nUse channels for their intended topics. Memes in `#meme-central`, bot commands in `#bot-commands`.\n\n"
-                "**5️⃣ No Self-Promotion**\nDo not advertise streams or other Discord servers without permission."
-            ),
-            color=discord.Color.blue()
-        )
-        embed.set_footer(text="Head to #get-roles to select your gaming roles!")
-        await interaction.response.send_message("Rules posted below!", ephemeral=True)
-        await interaction.channel.send(embed=embed)
 
     @app_commands.command(name="clear", description="Clear/Purge messages from a channel (Admin/Mod only)")
     @app_commands.describe(amount="Number of messages to delete (1-100)")
